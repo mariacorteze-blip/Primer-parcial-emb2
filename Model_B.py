@@ -4,6 +4,7 @@ import time
 import os
 
 
+
 ser = serial.Serial(
     port='/dev/serial0',
     baudrate=115200,
@@ -19,9 +20,9 @@ ENB = 19
 IN3 = 5
 IN4 = 6
 
-velocidad = 50
+global i
 i = 0
-vel = [100, 70] 
+vel = [70, 100] 
 archivo = "Model_B_dir.txt"
 
 GPIO.setwarnings(False)
@@ -46,57 +47,22 @@ if not os.path.exists(archivo):
 
 
 def stop_all():
-    """Detiene ambos motores"""
+    
     pwm1.ChangeDutyCycle(0)
     pwm2.ChangeDutyCycle(0)
     print('Motores OFF')
 
 def avanzar():
-    """Avanza en línea recta"""
+    
     GPIO.output(IN1, GPIO.HIGH)
     GPIO.output(IN2, GPIO.LOW)
-    pwm1.ChangeDutyCycle(velocidad)
+    pwm1.ChangeDutyCycle(vel[i])
     GPIO.output(IN3, GPIO.HIGH)
     GPIO.output(IN4, GPIO.LOW)
-    pwm2.ChangeDutyCycle(velocidad)
-    print(f"Avanzando - Velocidad: {velocidad}%")
+    pwm2.ChangeDutyCycle(vel[i])
+    print(f"Avanzando - Velocidad: {vel[i]}%")
 
 def retroceder():
-    """Retrocede en línea recta"""
-    GPIO.output(IN1, GPIO.LOW)
-    GPIO.output(IN2, GPIO.HIGH)
-    pwm1.ChangeDutyCycle(velocidad)
-    GPIO.output(IN3, GPIO.LOW)
-    GPIO.output(IN4, GPIO.HIGH)
-    pwm2.ChangeDutyCycle(velocidad)
-    print(f"Retrocediendo - Velocidad: {velocidad}%")
-
-def left():
-    """Gira a la izquierda (motor derecho avanza, izquierdo quieto)"""
-    GPIO.output(IN1, GPIO.LOW)   # Motor izquierdo apagado
-    GPIO.output(IN2, GPIO.LOW)
-    pwm1.ChangeDutyCycle(0)
-    GPIO.output(IN3, GPIO.HIGH)  # Motor derecho avanza
-    GPIO.output(IN4, GPIO.LOW)
-    pwm2.ChangeDutyCycle(velocidad)
-    print(f"Girando IZQUIERDA - Velocidad: {velocidad}%")
-
-def right():
-    """Gira a la derecha (motor izquierdo avanza, derecho quieto)"""
-    GPIO.output(IN1, GPIO.HIGH)  # Motor izquierdo avanza
-    GPIO.output(IN2, GPIO.LOW)
-    pwm1.ChangeDutyCycle(velocidad)
-    GPIO.output(IN3, GPIO.LOW)   # Motor derecho apagado
-    GPIO.output(IN4, GPIO.LOW)
-    pwm2.ChangeDutyCycle(0)
-    print(f"Girando DERECHA - Velocidad: {velocidad}%")
-
-def nitro():
-    global i  
-    i = i + 1
-    if i >= 2:
-        i = 0
-    
     
     GPIO.output(IN1, GPIO.LOW)
     GPIO.output(IN2, GPIO.HIGH)
@@ -104,9 +70,32 @@ def nitro():
     GPIO.output(IN3, GPIO.LOW)
     GPIO.output(IN4, GPIO.HIGH)
     pwm2.ChangeDutyCycle(vel[i])
-    print(f"MODO NITRO ACTIVADO - Velocidad: {vel[i]}%")
+    print(f"Retrocediendo - Velocidad: {vel[i]}%")
 
+def left():
+    
+    GPIO.output(IN1, GPIO.LOW)   
+    GPIO.output(IN2, GPIO.LOW)
+    pwm1.ChangeDutyCycle(0)
+    GPIO.output(IN3, GPIO.HIGH)  
+    GPIO.output(IN4, GPIO.LOW)
+    pwm2.ChangeDutyCycle(vel[i])
+    print(f"Girando IZQUIERDA - Velocidad: {vel[i]}%")
 
+def right():
+    GPIO.output(IN1, GPIO.HIGH) 
+    GPIO.output(IN2, GPIO.LOW)
+    pwm1.ChangeDutyCycle(vel[i])
+    GPIO.output(IN3, GPIO.LOW)   
+    GPIO.output(IN4, GPIO.LOW)
+    pwm2.ChangeDutyCycle(0)
+    print(f"Girando DERECHA - Velocidad: {vel[i]}%")
+
+def nitro():  
+    i = i + 1
+    if i >= 2:
+        i = 0
+    
 print("Sistema iniciado - Esperando comandos...")
 print("Comandos disponibles:")
 print("  W = Avanzar")
@@ -119,7 +108,7 @@ print("-" * 50)
 
 try:
     while True:
-        # Leer comando desde archivo
+        
         try:
             with open(archivo, "r") as f:
                 texto = f.read().strip()
